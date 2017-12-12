@@ -11,27 +11,38 @@
 
 <body>
   <header>
-    <h1>Casino Capitalist</h1>
+    
   </header>
 
   <main>
-    <div id="divHeader">
-        Willkommen!
+    <div><h1>Casino Capitalist</h1></div>
+    <div id="divHeader"></div>
+
+    <div id="divIncome">
+      <table id="tableIncome"></table>
     </div>
+
+    <div id="divExpenses">
+        <table id="tableExpenses"></table>
+    </div>
+
+    <button class="default" id="btnPlayRound">Play round</button>
+
+    <div id="divCash"></div>
 
     <div id="divStocks">
-      <table class="default" id="tableStocks">
-
-      </table>
+      <table id="tableStocks"></table>
     </div>
 
-    <button id="btnPlayRound">Play round</button>
-    
+
   </main>
+  <script src="liabilities.js"></script>
+  <script src="assets.js"></script>
   <script src="user.js"></script>
-  <script src="stocks.js"></script>
+  
   <script src="table.js"></script>
   <script src="app.js"></script>
+
 </body>
 
 </html>

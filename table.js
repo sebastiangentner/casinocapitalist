@@ -11,10 +11,12 @@ function tableRowFrom(strings) {
 } 
 
 
-function tableHeaderRowFrom(strings) {
+function tableHeaderRowsFrom(strings) {
     if (strings.length == 0) {return}
-    var rowString = "<thead>";
-    rowString += tableRowFrom(strings);
-    rowString += "</thead>";
+    var rowString = "<tr>";
+    for (i=0; i<strings.length; i++) {
+        rowString += "<th>" + strings[i] + "</th>";
+    }
+    rowString += "</tr>";
     return rowString
 }
