@@ -1,0 +1,12 @@
+move
+----
+1) payday
+2) random cost / gift
+3) market <-> buy or sell stocks
+
+
+event
+    buy assets
+    sell assets
+    get cash
+    lose cash

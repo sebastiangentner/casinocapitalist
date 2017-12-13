@@ -7,7 +7,8 @@ let tableIncome = window.document.getElementById("tableIncome");
 let divExpenses = window.document.getElementById("divExpenses");
 let tableExpenses = window.document.getElementById("tableExpenses");
 
-let divCash = window.document.getElementById("divCash");
+let divCashflow = window.document.getElementById("divCashflow");
+let tableCashflow = window.document.getElementById("tableCashflow");
 
 let divStocks = window.document.getElementById("divStocks");
 let tableStocks = window.document.getElementById("tableStocks");
@@ -32,53 +33,68 @@ function myFunction() {
 
 async function windowDidLoad() {
 
+    // setup user
     user = new User();
     user.firstname = "Max";
     user.lastname = "Mustermann";
-    user.cash = 1000;
-    user.job = new Job("Lehrer", 2500);
+    user.cash = 10000;
+    user.job = new Job("Bäcker", 3000);
     
+    // setup assets
     stocks = setupStocks();
-
-    let credit = new Liability();
-    credit.name = "Auto Kredit";
-    credit.cost = 250;
-    credit.price = 10000;
- 
     user.addAsset(stocks[0]);
-    user.addLiability(credit);
 
+    // setup liabilities
+    let credit1 = new Liability("Konsum Kredit", 8000, 260);
+    user.addLiability(credit1);
+
+    let credit2 = new Liability("KFZ Kredit", 10000, 365);
+    user.addLiability(credit2);
+
+    let rent = new Liability("Miete", 0, 700);
+    user.addLiability(rent);
+
+    let policy = new Liability("Versicherung", 0, 400);
+    user.addLiability(policy);
+
+    let boytoy = new Liability("Boytoy", 0, 125);
+    user.addLiability(boytoy);
+
+    // init ui
     updateUi();
 }
 
 // play round
 function playRound() {
-
     user.cash += user.cashflow();
-
     updateUi();
 }
 
 function updateUi() {
-    updateCash();
     updateHeader();
     updateIncomeTable();
     updateOutgoingTable();
     updateStocksTable();
+    updateCashflowTable();
 }
-
 
 // ui updates
-
-function updateCash() {
-    var str = "Cash: " + user.cash;
-    divCash.innerHTML = str;
-}
 
 function updateHeader() {
     var welcomeString = "Willkommen " + user.displayedName();
     welcomeString += "! Du bist " + user.job.name + " und verdienst " + user.job.salary + ".";
     divHeader.innerHTML = welcomeString;
+}
+
+function updateCashflowTable() {
+    var s = "<tbody>";
+    s += "<th>Cashflow</th>";
+    s += tableRowFrom(["Einnahmen", user.income()]);
+    s += tableRowFrom(["Ausgaben", user.outgoing()]);
+    s += tableRowFrom(["<b>Cashflow</b>", user.cashflow()]);
+    s += tableRowFrom(["<b>Cash</b>", user.cash]);
+
+    tableCashflow.innerHTML = s;
 }
 
 function updateIncomeTable() {
@@ -90,12 +106,11 @@ function updateIncomeTable() {
     for (row = 0; row < user.assets.length; row++) {
         let asset = user.assets[row];
 
-        tableString += tableRowFrom([asset.name, asset.cashflow]);
+        let str1 = asset.name + " (x" + asset.amount + ")";
+        let str2 = asset.cashflow * asset.amount;
+        tableString += tableRowFrom([str1, str2]);
     }
     
-    tableString += "<tfoot><tr><td colspan=" + 2 +">";
-    tableString += "+" + user.income();
-    tableString += "</td></tr></tfoot>";
     tableString += "</tbody>";
 
     tableIncome.innerHTML = tableString;
@@ -116,9 +131,6 @@ function updateOutgoingTable() {
 
     }
     
-    tableString += "<tfoot><tr><td colspan=" + colspan +">";
-    tableString += user.outgoing();
-    tableString += "</td></tr></tfoot>";
     tableString += "</tbody>";
 
     tableExpenses.innerHTML = tableString;
@@ -137,8 +149,20 @@ function updateStocksTable() {
         for (i=0; i<strings.length; i++) {
             rowString += "<td>" + strings[i] + "</td>";
         }
-        rowString += "<td onclick=buyStockInRow("+row+")>buy</td>";
-        rowString += "<td onclick=sellStockInRow("+row+")>sell</td>";
+
+        // buy
+        rowString += "<td><button class=default onclick=buyStockInRow("+row+")";
+        if (userCanBuyStockInRow(row) == false) {
+            rowString += " disabled";
+        }
+
+        // sell
+        rowString += ">Buy</button></td>";
+        rowString += "<td><button class=default onclick=sellStockInRow("+row+")";
+        if (userOwnsStockInRow(row) == false) {
+            rowString += " disabled";
+        }
+        rowString += ">Sell</button></td>";
         rowString += "</tr>";
 
         tableString += rowString;
@@ -151,7 +175,7 @@ function updateStocksTable() {
 
 function buyStockInRow(row) {
     let stock = this.stocks[row];
-    if ((user.cash - stock.price) > 0) {
+    if (userCanBuyStockInRow(row)) {
         console.log("buy 1x " + stock.name + " for " + stock.price);
         user.addAsset(stock);
         user.cash -= stock.price;
@@ -162,20 +186,34 @@ function buyStockInRow(row) {
     
 }
 
-function sellStockInRow(row) {
-    let stockToSell = this.stocks[row];
-    // check is user owns
+function userCanBuyStockInRow(row) {
+    let stock = this.stocks[row];
+    var canBuy = false;
+    if ((user.cash - stock.price) > 0) {
+        canBuy = true;
+    }
+    return canBuy;
+}
+
+function userOwnsStockInRow(row) {
+    let stock = this.stocks[row];
     var owns = false;
     for (i = 0; i < user.assets.length; i++) {
         let asset = user.assets[i];
 
-        if (asset.name == stockToSell.name) {
+        if (asset.name == stock.name) {
             owns = true;
             break;
         }
     }
+    return owns;
+}
 
-    if (owns) {
+function sellStockInRow(row) {
+    let stockToSell = this.stocks[row];
+    // check is user owns
+    
+    if (userOwnsStockInRow(row)) {
         console.log("sell 1x " + stockToSell.name + " for " + stockToSell.price);
         user.removeAsset(stockToSell);
         user.cash += stockToSell.price;

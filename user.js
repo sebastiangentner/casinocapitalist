@@ -17,11 +17,40 @@ class User {
     }
 
     addAsset(a) {
-        this.assets.push(a);
+        var exist = false;
+
+        for (var i=0; i<this.assets.length; i++) {
+            var asset = this.assets[i];
+            if (asset.name == a.name) {
+                asset.amount++;
+                exist = true;
+                break;
+            }
+        }
+
+        if (!exist) {
+            this.assets.push(a);
+        }
     }
 
     removeAsset(a) {
-        this.assets.pop(a);
+        var remove = false;
+
+        for (var i=0; i<this.assets.length; i++) {
+            var asset = this.assets[i];
+            if (asset.name == a.name) {
+                asset.amount--;
+                
+                if (asset.amount <= 0) {
+                    remove = true;
+                }
+                break;
+            }
+        }
+        
+        if (remove) {
+            this.assets.pop(a);
+        }
     }
 
     addLiability(l) {
@@ -33,7 +62,7 @@ class User {
     }
 
     displayedName() {
-        return this.firstname + " " + this.lastname
+        return this.firstname + " " + this.lastname;
     }
 
     income() {
@@ -42,24 +71,24 @@ class User {
         income += this.job.salary;
         
         for (i = 0; i < this.assets.length; i++) {
-            income += this.assets[i].cashflow;
+            income += this.assets[i].fullCashflow();
         }
 
-        return income
+        return income;
     }
 
     outgoing() {
         var outgoing = 0;
 
         for (i = 0; i < this.liabilities.length; i++) {
-            outgoing -=  this.liabilities[i].cost;
+            outgoing += this.liabilities[i].cost;
          }
 
         return outgoing;        
     }
 
     cashflow() {
-        return this.income() + this.outgoing();
+        return this.income() - this.outgoing();
     }
 }
 
